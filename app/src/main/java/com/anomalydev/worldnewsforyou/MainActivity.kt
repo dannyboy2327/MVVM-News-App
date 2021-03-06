@@ -7,7 +7,9 @@ import com.anomalydev.worldnewsforyou.databinding.ActivityMainBinding
 import com.anomalydev.worldnewsforyou.features.bookmarks.BookmarksFragment
 import com.anomalydev.worldnewsforyou.features.breakingnews.BreakingNewsFragment
 import com.anomalydev.worldnewsforyou.features.searchnews.SearchNewsFragment
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
