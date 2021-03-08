@@ -2,6 +2,7 @@ package com.anomalydev.worldnewsforyou.features.breakingnews
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -9,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.anomalydev.worldnewsforyou.R
 import com.anomalydev.worldnewsforyou.databinding.FragmentBreakingNewsBinding
 import com.anomalydev.worldnewsforyou.shared.NewsArticleListAdapter
+import com.bumptech.glide.load.engine.Resource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 
@@ -32,8 +34,16 @@ class BreakingNewsFragment: Fragment(R.layout.fragment_breaking_news) {
             }
 
             viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-                viewModel.breakingNews.collect { articles ->
-                    newsArticleListAdapter.submitList(articles)
+                viewModel.breakingNews.collect {
+                    val result = it ?: return@collect
+
+                    swipeRefreshLayout.isRefreshing = result is com.anomalydev.worldnewsforyou.util.Resource.Loading
+                    recyclerView.isVisible = !result.data.isNullOrEmpty()
+                    textViewError.isVisible = result.error != null && result.data.isNullOrEmpty()
+                    buttonRetry.isVisible = result.error != null && result.data.isNullOrEmpty()
+                    textViewError.text = getString(
+                        R.string.could_not_refresh, result.error?.localizedMessage ?: getString(R.string.unknown_error_occurred))
+                    newsArticleListAdapter.submitList(result.data)
                 }
             }
         }
