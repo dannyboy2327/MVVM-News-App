@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -17,7 +18,7 @@ class BreakingNewsViewModel @Inject constructor(
 ): ViewModel() {
 
     // Channel to send and receive triggers from flows
-    private val refreshTriggerChannel = Channel<Unit>()
+    private val refreshTriggerChannel = Channel<Refresh>()
     // Triggers for when channel receives a new flow
     private val refreshTrigger = refreshTriggerChannel.receiveAsFlow()
 
@@ -28,8 +29,9 @@ class BreakingNewsViewModel @Inject constructor(
     // Trigger to scroll to top of screen
     var pendingScrollToTopAfterRefresh = false
 
-    val breakingNews = refreshTrigger.flatMapLatest {
+    val breakingNews = refreshTrigger.flatMapLatest { refresh ->
         repository.getBreakingNews(
+            refresh == Refresh.FORCE,
             onFetchSuccess = {
                 // If success succeeds, set scroll to top to true
                 pendingScrollToTopAfterRefresh = true
@@ -40,6 +42,13 @@ class BreakingNewsViewModel @Inject constructor(
         )
     }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
+    init {
+        viewModelScope.launch {
+            repository.deleteNonBookmarkedArticlesOlderThan(
+                System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7)
+            )
+        }
+    }
 
     /**
      * Will refresh the data flow from breakingNews when onStart is triggered on the
@@ -48,7 +57,7 @@ class BreakingNewsViewModel @Inject constructor(
     fun onStart() {
         if (breakingNews.value !is Resource.Loading) {
             viewModelScope.launch {
-                refreshTriggerChannel.send(Unit)
+                refreshTriggerChannel.send(Refresh.NORMAL)
             }
         }
 
@@ -61,10 +70,14 @@ class BreakingNewsViewModel @Inject constructor(
     fun onManualRefresh() {
         if (breakingNews.value !is Resource.Loading) {
             viewModelScope.launch {
-                refreshTriggerChannel.send(Unit)
+                refreshTriggerChannel.send(Refresh.FORCE)
             }
         }
 
+    }
+
+    enum class Refresh {
+        FORCE, NORMAL
     }
 
     // Class is used to trigger events for snackbar
