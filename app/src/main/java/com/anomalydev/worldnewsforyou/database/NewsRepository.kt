@@ -1,5 +1,8 @@
 package com.anomalydev.worldnewsforyou.database
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import androidx.room.withTransaction
 import com.anomalydev.worldnewsforyou.api.NewsApi
 import com.anomalydev.worldnewsforyou.util.Resource
@@ -13,10 +16,10 @@ import javax.inject.Inject
 
 class NewsRepository @Inject constructor(
     private val newsApi: NewsApi,
-    private val newsArticleArticleDb: NewsArticleDatabase
+    private val newsArticleDb: NewsArticleDatabase
 ) {
 
-    private val newsArticleDao = newsArticleArticleDb.newsArticleDao()
+    private val newsArticleDao = newsArticleDb.newsArticleDao()
 
     fun getBreakingNews(
         forceRefresh: Boolean,
@@ -51,7 +54,7 @@ class NewsRepository @Inject constructor(
                     BreakingNews(article.url)
                 }
 
-                newsArticleArticleDb.withTransaction {
+                newsArticleDb.withTransaction {
                     newsArticleDao.deleteAllBreakingNews()
                     newsArticleDao.insertArticles(breakingNewsArticles)
                     newsArticleDao.insertBreakingNews(breakingNews)
@@ -79,6 +82,13 @@ class NewsRepository @Inject constructor(
                 onFetchFailed(t)
             }
         )
+
+    fun getSearchResultsPaged(query: String) : Flow<PagingData<NewsArticle>> =
+        Pager(
+            config = PagingConfig(pageSize = 20, maxSize = 200),
+            remoteMediator = SearchNewsRemoteMediator(query, newsApi, newsArticleDb),
+            pagingSourceFactory = { newsArticleDao.getSearchResultArticlesPaged(query) }
+        ).flow
 
     fun getAllBookmarkedArticles() : Flow<List<NewsArticle>> =
         newsArticleDao.getAllBookmarkedArticles()

@@ -1,5 +1,6 @@
 package com.anomalydev.worldnewsforyou.database
 
+import androidx.paging.PagingSource
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 
@@ -8,6 +9,9 @@ interface NewsArticleDao {
 
     @Query("SELECT * FROM breaking_news INNER JOIN news_articles ON articleUrl = url")
     fun getAllBreakingNewsArticle(): Flow<List<NewsArticle>>
+
+    @Query("SELECT * FROM search_results INNER JOIN news_articles ON articleUrl = url WHERE searchQuery =:query ORDER BY queryPosition")
+    fun getSearchResultArticlesPaged(query: String) : PagingSource<Int, NewsArticle>
 
     @Query("SELECT * FROM news_articles WHERE isBookmarked = 1")
     fun getAllBookmarkedArticles(): Flow<List<NewsArticle>>
@@ -22,7 +26,7 @@ interface NewsArticleDao {
     suspend fun insertBreakingNews(breakingNews: List<BreakingNews>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertSearchResults(searchResults: List<SearchResults>)
+    suspend fun insertSearchResults(searchResults: List<SearchResult>)
 
     @Update
     suspend fun updateArticle(article: NewsArticle)

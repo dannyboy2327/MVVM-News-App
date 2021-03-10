@@ -5,6 +5,6 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "search_query_remote_keys")
 data class SearchQueryRemoteKey(
-    @PrimaryKey val searchQuery: Int,
+    @PrimaryKey val searchQuery: String,
     val nextPageKey: Int
 )
