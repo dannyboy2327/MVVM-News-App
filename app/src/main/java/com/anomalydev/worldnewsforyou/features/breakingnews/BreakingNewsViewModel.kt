@@ -76,6 +76,17 @@ class BreakingNewsViewModel @Inject constructor(
 
     }
 
+    /**
+     *  Will modify old article with new article based on its bookmark value
+     */
+    fun onBookmarkClick(article: NewsArticle) {
+        val currentlyBookmarked = article.isBookmarked
+        val updatedArticle = article.copy(isBookmarked = !currentlyBookmarked)
+        viewModelScope.launch {
+            repository.updateArticle(updatedArticle)
+        }
+    }
+
     enum class Refresh {
         FORCE, NORMAL
     }
