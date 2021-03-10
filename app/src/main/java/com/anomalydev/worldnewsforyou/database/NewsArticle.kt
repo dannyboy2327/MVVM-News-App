@@ -19,7 +19,7 @@ data class BreakingNews(
 )
 
 @Entity(tableName = "search_results", primaryKeys = ["searchQuery", "articleUrl"])
-data class SearchResults(
+data class SearchResult(
     val searchQuery: String,
     val articleUrl: String,
     val queryPosition: Int
