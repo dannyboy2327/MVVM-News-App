@@ -4,6 +4,7 @@ import android.view.View
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
+import java.util.concurrent.locks.Condition
 
 /**
  *  This extension function creates a snackbar while extending Fragment
@@ -16,6 +17,14 @@ fun Fragment.showSnackbar(
     view: View = requireView()
 ) {
     Snackbar.make(view, message, duration).show()
+}
+
+inline fun <T: View> T.showIfOrInvisible(condition: (T) -> Boolean) {
+    if (condition(this)) {
+        this.visibility = View.VISIBLE
+    } else {
+        this.visibility = View.INVISIBLE
+    }
 }
 
 inline fun SearchView.onQueryTextSubmit(crossinline listener: (String) -> Unit) {
