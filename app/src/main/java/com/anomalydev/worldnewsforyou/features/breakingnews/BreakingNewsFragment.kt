@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.anomalydev.worldnewsforyou.MainActivity
 import com.anomalydev.worldnewsforyou.R
 import com.anomalydev.worldnewsforyou.databinding.FragmentBreakingNewsBinding
@@ -46,6 +47,8 @@ MainActivity.OnBottomNavigationFragmentReselectedListener{
                viewModel.onBookmarkClick(article)
             }
         )
+
+        newsArticleListAdapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
 
         binding.apply {
             recyclerView.apply {
